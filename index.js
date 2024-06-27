@@ -49,12 +49,16 @@ async function run() {
 
     })
 
-
+    //creating a new collection for lobby based on the name of the player
     app.post('/lobby/:user',async(req,res)=>{
 
     const lobbyCollection=db.collection(req.params.user)   
     const body=await playerCollection.find({playerName:req.params.user}).toArray()
+
+
     const result=await lobbyCollection.insertOne(body[0])
+    
+
 
     const updatedDoc={
       $set:{
@@ -104,14 +108,22 @@ async function run() {
         //if the lobby exists insert the player in the lobby collection
       if((await dbName).find(Lobby=>Lobby.name==body.lobbyNum)){
        
+
         //setting a number for player based on the number of players in the lobb
 
     
         const filter={playerName: user}
         const lobby=db.collection(body.lobbyNum)
         const lobbyPLayers=await lobby.find({}).toArray()
+        const existPlayers= await lobby.find(filter).toArray()
         const newPlayer=await playerCollection.find(filter).toArray()
+        if(!existPlayers.find(player=>player.playerName==user)){
         const enterPlayer= await lobby.insertOne(newPlayer[0])
+        }
+        else{
+          console.log("player already exists")
+        }
+
         if(lobbyPLayers.length>=1){
           const updatedDoc={
             $set:{
@@ -123,7 +135,7 @@ async function run() {
         const result=await lobby.updateOne(filter,updatedDoc);
  
         }
-        res.send(enterPlayer)
+
         console.log(lobbyPLayers)
         console.log(newPlayer[0])
 
@@ -164,8 +176,6 @@ async function run() {
          }
 )
       res.send()
-
-
 
     })
 
